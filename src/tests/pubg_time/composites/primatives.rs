@@ -19,7 +19,7 @@ pub struct Account {
     pub account_id: Option<String>
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Common {
     #[serde(rename="matchId")]
     match_id: Option<String>,
@@ -29,7 +29,7 @@ pub struct Common {
     is_game: Option<f32>
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Item{
     #[serde(rename="itemId")]
     item_id: Option<String>,
@@ -40,7 +40,7 @@ pub struct Item{
     sub_category: Option<String>
 }
 
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug,Serialize,Deserialize, Clone)]
 pub struct GameState{
     #[serde(rename="elapsedTime")]
     elapsed_time: Option<i16>,

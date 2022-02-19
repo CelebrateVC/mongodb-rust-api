@@ -1,77 +1,70 @@
 use actix_web::{web::Path};
 use actix_web::HttpResponse;
-use mongodb::bson::oid::ObjectId;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::process::exit;
-use std::str::FromStr;
+use serde::Serialize;
 use mongodb::{
     bson::doc,
     sync::{
-        Client,
         Cursor,
         Database,
         Collection},
     error::Error};
 
 use crate::APPLICATION_JSON;
-use crate::composites::{Minimal, Minable};
 
+pub trait Minable<T> {
+    fn to_min(&self)->T;
+}
 
-#[derive(Clone)]
-pub struct MyAwesomeInnerDataContainer<_T>{
-    data: HashMap<ObjectId,HashMap<String,HashMap<String, _T>>>
+pub trait Insertable<T>{
+    fn obj_entry_or_insert(self,dict: T) -> T;
+}
+
+pub trait Gettable<Info,Minimal>{
+    fn get(&self, k: Path<Info>) -> Option<Minimal>;
 }
 
 
-impl<T: Minable+ serde::de::DeserializeOwned + Unpin + std::marker::Send + Sync + std::fmt::Debug> MyAwesomeInnerDataContainer<T>{
+#[derive(Clone)]
+pub struct APIEndpointContainer<Base,DataContainer: Clone, Minimal: Clone, Info: Clone>{
+    data: DataContainer,
+    base: Base,
+    min: Minimal,
+    info: Info
+}
+
+
+impl<Minimal: Minable<Minimal> + std::default::Default +  Serialize + Clone,
+     DataContainer: Clone + Gettable<Info,Minimal>,
+     Info: Clone
+     > APIEndpointContainer<Minimal,DataContainer,Minimal, Info>{
 
     pub fn list(self, path: Path<Info>) -> HttpResponse{
-        let ac: String = path.account.clone();
-        let ts: String = path.timestamp.clone();
-        let mi = ObjectId::from_str(&path.match_id).unwrap();
 
-        let mut answer = Minimal {
-            _d: "0000-00-00t00:00:00.000Z".to_string(),
-            account_id: ac.to_owned(),
-            mongo_match_id: mi.to_owned(),
-            _id: ObjectId::new()
-        };
 
-        match self.data.get(&mi){
-            Some(hash) =>{
-                match hash.get(&ac){
-                    Some(data) =>{
-                        for (date, strut) in data{
-                            if answer._d<date.to_string() && date<&ts {
-                                answer = strut.to_min()
-                            }
-                        }
-                    }
-                    None => return HttpResponse::NotFound().content_type(APPLICATION_JSON).json(ErrorMessage{error:"No Account".to_string()})
-                }
+        match self.data.get(path){
+            Some(data) =>{
+                HttpResponse::Ok()
+                .content_type(APPLICATION_JSON)
+                .json(data)
             },
-            None => return HttpResponse::NotFound().content_type(APPLICATION_JSON).json(ErrorMessage{error:"No Match".to_string()})
+            None => HttpResponse::NotFound().content_type(APPLICATION_JSON).json(ErrorMessage{error:"No Match Found".to_string()})
         }    
-    
-        HttpResponse::Ok()
-            .content_type(APPLICATION_JSON)
-            .json(answer)
-
     }
+}
 
-
-    pub fn new(endpoint: &str)-> MyAwesomeInnerDataContainer<Minimal>{
+impl<
+    Minimal:  Minable<Minimal> + Clone + Default + Insertable<DataContainer> ,
+    T: Minable<Minimal> + serde::de::DeserializeOwned + Unpin + std::marker::Send + Sync + std::fmt::Debug,
+    DataContainer: Clone+Default,
+    Info: Clone + Default  >
+    APIEndpointContainer<T,DataContainer,Minimal, Info>{
+    pub fn new(endpoint: &str, db: &Database)-> APIEndpointContainer<Minimal,DataContainer,Minimal, Info>{
         println!("{}",endpoint);
-        let mut obj = MyAwesomeInnerDataContainer { data: HashMap::new() };
+        let mini: Minimal = std::default::Default::default();
+        let blank_data: DataContainer = std::default::Default::default();
+        let info = std::default::Default::default();
+        let mut obj: APIEndpointContainer<Minimal, DataContainer, Minimal, Info> = APIEndpointContainer { data: blank_data, min: mini.clone(), base:mini, info:info };
 
-        let client = Client::with_uri_str("mongodb://192.168.0.100:27017");
-        if client.is_err(){
-            println!("{:?}",client);
-            exit(1)
-        };
-        let con:  Client = client.unwrap();
-        let db:  Database = con.database("pubg");
         let collection: Collection<T> = db.collection::<T>(endpoint);
 
         let prog_count = collection.count_documents(doc! {}, None).unwrap();
@@ -86,11 +79,12 @@ impl<T: Minable+ serde::de::DeserializeOwned + Unpin + std::marker::Send + Sync 
                     match record{
                         Ok(rec) => {
                             let min: Minimal = rec.to_min();
-                            obj.data.entry(min.mongo_match_id.to_owned())
-                                    .or_insert(HashMap::new())
-                                        .entry(min.account_id.clone())
-                                        .or_insert(HashMap::new())
-                                            .insert(min._d.clone(), min);
+                            obj.data = min.obj_entry_or_insert(obj.data);
+                            // obj.data.entry(min.mongo_match_id.to_owned())
+                            //         .or_insert(HashMap::new())
+                            //             .entry(min.account_id.clone())
+                            //             .or_insert(HashMap::new())
+                            //                 .insert(min._d.clone(), min);
                         },
                         Err(k) => println!("{:?}",k)
                     };
@@ -103,13 +97,7 @@ impl<T: Minable+ serde::de::DeserializeOwned + Unpin + std::marker::Send + Sync 
     }
 }
 
-#[derive(Deserialize)]
-pub struct Info {
-    pub endpoint: String,
-    match_id: String,
-    account:String,
-    timestamp: String
-}
+
 
 #[derive(Serialize)]
 struct ErrorMessage{
