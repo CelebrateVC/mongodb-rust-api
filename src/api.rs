@@ -59,7 +59,7 @@ impl<
     Info: Clone + Default  >
     APIEndpointContainer<T,DataContainer,Minimal, Info>{
     pub async fn new(endpoint: &str,uri: &str, database: &str)-> APIEndpointContainer<Minimal,DataContainer,Minimal, Info>{
-        println!("{}",endpoint);
+        println!("{} getting Count",endpoint);
         let mini: Minimal = std::default::Default::default();
         let blank_data: DataContainer = std::default::Default::default();
         let info = std::default::Default::default();
@@ -69,14 +69,14 @@ impl<
         let collection: Collection<T> = db.collection::<T>(endpoint);
 
         let prog_count = collection.count_documents(doc! {}, None).await.unwrap();
+        println!("{} has {} records, reading",endpoint, prog_count);
 
         let items: Result<Cursor<T>, Error> = collection.find(doc! {}, None).await;
     
         match items {
             Ok(mut j) => {
-                let prog = indicatif::ProgressBar::new(prog_count);
+                println!("{} - data loading",endpoint);
                 while let Ok(record) = j.try_next().await{
-                    prog.inc(1);
                     if let Some(data) = record{
                         let min: Minimal = data.to_min();
                         obj.data = min.obj_entry_or_insert(obj.data);
@@ -84,8 +84,9 @@ impl<
                     else{break}
                 }
                 },
-            Err(k) => println!("Collection Error\n\t{:?}",k) }
-
+            Err(k) => println!("{} - Collection Error\n\t{:?}",endpoint, k)
+        }
+        println!("{} - data recieved",endpoint);
         obj
 }}
 
