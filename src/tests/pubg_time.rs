@@ -42,27 +42,49 @@ async fn test_timing_api(tx: mpsc::Sender<i32>) {
         let db = mongo_connection("mongodb://192.168.0.101:27017".to_owned(), "pubg".to_owned()).await;
         println!("hello");
 
-        let map: HashMap<String,api::APIEndpointContainer<Minimal, T,Minimal, Info>>= HashMap::from(
-            [
-                // ("LogPlayerAttack".to_owned(),      api::APIEndpointContainer::<LogPlayerAttack      , T, Minimal,Info>::new("logplayerattack",&db).await),
-                ("LogArmorDestroy".to_owned(),      api::APIEndpointContainer::<LogArmorDestroy      , T, Minimal,Info>::new("logarmordestroy",&db).await),
-                // ("LogItemAttach".to_owned(),        api::APIEndpointContainer::<LogItemAttach        , T, Minimal,Info>::new("logitemattach",&db).await),
-                // ("LogItemDetatch".to_owned(),       api::APIEndpointContainer::<LogItemDetatch       , T, Minimal,Info>::new("logitemdetatch",&db).await),
-                // ("LogItemDrop".to_owned(),          api::APIEndpointContainer::<LogItemDrop          , T, Minimal,Info>::new("logitemdrop",&db).await),
-                // ("LogHeal".to_owned(),              api::APIEndpointContainer::<LogHeal              , T, Minimal,Info>::new("logheal",&db).await),
-                // ("LogGameStatePeriodic".to_owned(), api::APIEndpointContainer::<LogGameStatePeriodic , T, Minimal,Info>::new("loggamestateperiodic",&db).await),
-                // ("LogItemUnequip".to_owned(),       api::APIEndpointContainer::<LogItemUnequip       , T, Minimal,Info>::new("logitemunequip",&db).await),
-                // ("LogItemUse".to_owned(),           api::APIEndpointContainer::<LogItemUse           , T, Minimal,Info>::new("logitemuse",&db).await),
-                // ("LogParachuteLanding".to_owned(),  api::APIEndpointContainer::<LogParachuteLanding  , T, Minimal,Info>::new("logparachutelanding",&db).await),
-                // ("LogPlayerKill".to_owned(),        api::APIEndpointContainer::<LogPlayerKill        , T, Minimal,Info>::new("logplayerkill",&db).await),
-                // ("LogPlayerMakeGroggy".to_owned(),  api::APIEndpointContainer::<LogPlayerMakeGroggy  , T, Minimal,Info>::new("logplayermakegroggy",&db).await),
-                // ("LogPlayerRevive".to_owned(),      api::APIEndpointContainer::<LogPlayerRevive      , T, Minimal,Info>::new("logplayerrevive",&db).await),
-                // ("LogPlayerTakeDamage".to_owned(),  api::APIEndpointContainer::<LogPlayerTakeDamage  , T, Minimal,Info>::new("logplayertakedamage",&db).await),
-                // ("LogPlayerUseThrowable".to_owned(),api::APIEndpointContainer::<LogPlayerUseThrowable, T, Minimal,Info>::new("logplayerusethrowable",&db).await),
-                // ("LogItemEquip".to_owned(),         api::APIEndpointContainer::<LogItemEquip         , T, Minimal,Info>::new("LogItemEquip",&db).await),
-                // ("LogItemPickup".to_owned(),        api::APIEndpointContainer::<LogItemPickup        , T, Minimal,Info>::new("LogItemPickup",&db).await),
-            ]
-        ); 
+        // TODO: Create internal library functionality; pass in type, string, and endpoint get back endpoint hashmap
+        let data = futures::join!(
+               api::APIEndpointContainer::<LogPlayerAttack      , T, Minimal,Info>::new("logplayerattack",&db),
+               api::APIEndpointContainer::<LogArmorDestroy      , T, Minimal,Info>::new("logarmordestroy",&db),
+               api::APIEndpointContainer::<LogItemAttach        , T, Minimal,Info>::new("logitemattach",&db),
+            //    api::APIEndpointContainer::<LogItemDetatch       , T, Minimal,Info>::new("logitemdetatch",&db),
+            //    api::APIEndpointContainer::<LogItemDrop          , T, Minimal,Info>::new("logitemdrop",&db),
+            //    api::APIEndpointContainer::<LogHeal              , T, Minimal,Info>::new("logheal",&db),
+            //    api::APIEndpointContainer::<LogGameStatePeriodic , T, Minimal,Info>::new("loggamestateperiodic",&db),
+            //    api::APIEndpointContainer::<LogItemUnequip       , T, Minimal,Info>::new("logitemunequip",&db),
+            //    api::APIEndpointContainer::<LogItemUse           , T, Minimal,Info>::new("logitemuse",&db),
+            //    api::APIEndpointContainer::<LogParachuteLanding  , T, Minimal,Info>::new("logparachutelanding",&db),
+            //    api::APIEndpointContainer::<LogPlayerKill        , T, Minimal,Info>::new("logplayerkill",&db),
+            //    api::APIEndpointContainer::<LogPlayerMakeGroggy  , T, Minimal,Info>::new("logplayermakegroggy",&db),
+            //    api::APIEndpointContainer::<LogPlayerRevive      , T, Minimal,Info>::new("logplayerrevive",&db),
+            //    api::APIEndpointContainer::<LogPlayerTakeDamage  , T, Minimal,Info>::new("logplayertakedamage",&db),
+            //    api::APIEndpointContainer::<LogPlayerUseThrowable, T, Minimal,Info>::new("logplayerusethrowable",&db),
+            //    api::APIEndpointContainer::<LogItemEquip         , T, Minimal,Info>::new("LogItemEquip",&db),
+            //    api::APIEndpointContainer::<LogItemPickup        , T, Minimal,Info>::new("LogItemPickup",&db),
+            );
+
+            let data = [
+                    ("LogPlayerAttack".to_owned(),      data.0),
+                    ("LogArmorDestroy".to_owned(),      data.1),
+                    ("LogItemAttach".to_owned(),        data.2),
+                    // ("LogItemDetatch".to_owned(),       data.3),
+                    // ("LogItemDrop".to_owned(),          data.4),
+                    // ("LogHeal".to_owned(),              data.5),
+                    // ("LogGameStatePeriodic".to_owned(), data.6),
+                    // ("LogItemUnequip".to_owned(),       data.7),
+                    // ("LogItemUse".to_owned(),           data.8),
+                    // ("LogParachuteLanding".to_owned(),  data.9),
+                    // ("LogPlayerKill".to_owned(),        data.10),
+                    // ("LogPlayerMakeGroggy".to_owned(),  data.11),
+                    // ("LogPlayerRevive".to_owned(),      data.12),
+                    // ("LogPlayerTakeDamage".to_owned(),  data.13),
+                    // ("LogPlayerUseThrowable".to_owned(),data.14),
+                    // ("LogItemEquip".to_owned(),         data.15),
+                    // ("LogItemPickup".to_owned(),        data.16),
+                ];
+
+
+        let map: HashMap<String,api::APIEndpointContainer<Minimal, T,Minimal, Info>>= HashMap::from(     data   ); 
 
         let server_ = server::WebServer::new(map,
                                                                              "/{endpoint}/{match_id}/{account}/{timestamp}".to_owned(),
