@@ -136,21 +136,11 @@ impl HasEndpoint for Info{
 
 impl Default for Minimal{
     fn default() -> Self {
-        let mut default_match_id: [u8; 12] = [0;12];
-        let mut j = 0;
-        for i in "612aacfc20c35c423897bed4".as_bytes(){
-            default_match_id[j] = *i;
-            j+=1;
-            if j == 12 {break;}
-        }
-        let default_oid = ObjectId::from_bytes(default_match_id);
-
-
         Minimal {
             _d: "0000-00-00t00:00:00.000Z".to_string(),
             account_id: "default_account".to_owned(),
-            mongo_match_id: default_oid,
-            _id: ObjectId::new()
+            mongo_match_id: Default::default(),
+            _id: Default::default()
         }  
     }
 
