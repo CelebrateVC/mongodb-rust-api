@@ -11,9 +11,6 @@ use futures::stream::TryStreamExt;
 
 use crate::{mongo_connection,APPLICATION_JSON};
 
-pub trait Minable<T> {
-    fn to_min(&self)->T;
-}
 
 pub trait Insertable<T>{
     fn obj_entry_or_insert(self,dict: T) -> T;
@@ -33,7 +30,7 @@ pub struct APIEndpointContainer<Base,DataContainer: Clone, Minimal: Clone, Info:
 }
 
 
-impl<Minimal: Minable<Minimal> + std::default::Default +  Serialize + Clone,
+impl<Minimal: std::default::Default +  Serialize + Clone,
      DataContainer: Clone + Gettable<Info,Minimal>,
      Info: Clone
      > APIEndpointContainer<Minimal,DataContainer,Minimal, Info>{
@@ -53,8 +50,8 @@ impl<Minimal: Minable<Minimal> + std::default::Default +  Serialize + Clone,
 }
 
 impl<
-    Minimal:  Minable<Minimal> + Clone + Default + Insertable<DataContainer> ,
-    T: Minable<Minimal> + serde::de::DeserializeOwned + Unpin + std::marker::Send + Sync + std::fmt::Debug,
+    Minimal: Clone + Default + Insertable<DataContainer> ,
+    T: Into<Minimal> + serde::de::DeserializeOwned + Unpin + std::marker::Send + Sync + std::fmt::Debug,
     DataContainer: Clone+Default,
     Info: Clone + Default  >
     APIEndpointContainer<T,DataContainer,Minimal, Info>{
@@ -78,7 +75,7 @@ impl<
                 println!("{} - data loading",endpoint);
                 while let Ok(record) = j.try_next().await{
                     if let Some(data) = record{
-                        let min: Minimal = data.to_min();
+                        let min: Minimal = data.into();
                         obj.data = min.obj_entry_or_insert(obj.data);
                     }
                     else{break}

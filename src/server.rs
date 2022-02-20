@@ -5,20 +5,20 @@ use serde::de::DeserializeOwned;
 use serde::{Serialize};
 use std::collections::HashMap;
 
-use crate::api::{self, Minable, Gettable};
+use crate::api::{self, Gettable};
 use crate::APPLICATION_JSON;
 
 pub trait HasEndpoint{
     fn get_endpoint(self) -> String;
 }
-pub struct WebServer<Minimal: Minable<Minimal> + Clone, DataContainer: Clone, Info: Clone>{
+pub struct WebServer<Minimal: Clone, DataContainer: Clone, Info: Clone>{
     endpoints: HashMap<String,api::APIEndpointContainer<Minimal,DataContainer,Minimal, Info>>,
     path: String,
     server_url: String,
     server_port: String, 
 }
 
-impl<Minimal: Minable<Minimal> + Clone,
+impl<Minimal: Clone,
      DataContainer: Clone, 
      Info: Clone> 
     WebServer<Minimal, DataContainer, Info>{
@@ -33,7 +33,7 @@ impl<Minimal: Minable<Minimal> + Clone,
 
 }
 
-impl<Minimal: 'static + Minable<Minimal> + Clone + Default + Serialize + DeserializeOwned + Send,
+impl<Minimal: 'static + Clone + Default + Serialize + DeserializeOwned + Send,
      DataContainer: 'static + Clone + Gettable<Info,Minimal> + Send,
      Info: 'static + Clone+HasEndpoint+DeserializeOwned + Send 
     >

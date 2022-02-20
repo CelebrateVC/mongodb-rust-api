@@ -2,7 +2,6 @@ use std::{str::FromStr};
 
 use serde::{Deserialize, Serialize};
 use mongodb::bson::{oid::ObjectId};
-use crate::api::Minable;
 mod primatives;
 
 
@@ -379,41 +378,38 @@ pub struct Minimal{
     pub _d: String,
 }
 
-impl Minable<Minimal> for Minimal{fn to_min(&self) ->Minimal {self.clone()}}
-
-
-impl Minable<Minimal> for LogArmorDestroy{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogArmorDestroy{
+    fn into(self) ->Minimal {
          unpack(self._id, self.attacker.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogItemAttach{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogItemAttach{
+    fn into(self) ->Minimal {
         unpack(self._id, self.character.clone(), self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogItemDetatch{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogItemDetatch{
+    fn into(self) ->Minimal {
         unpack(self._id, self.character.clone(), self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogItemDrop{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogItemDrop{
+    fn into(self) ->Minimal {
         unpack(self._id, self.character.clone(), self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogHeal{
-    fn to_min(&self)->Minimal {
+impl Into<Minimal> for LogHeal{
+    fn into(self)->Minimal {
         unpack(self._id, self.character.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogGameStatePeriodic{
-    fn to_min(&self)->Minimal {
+impl Into<Minimal> for LogGameStatePeriodic{
+    fn into(self)->Minimal {
         Minimal{
             _id: self._id,
             account_id: "any".to_string(),
@@ -423,68 +419,68 @@ impl Minable<Minimal> for LogGameStatePeriodic{
     }
 }
 
-impl Minable<Minimal> for LogItemUnequip{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogItemUnequip{
+    fn into(self) ->Minimal {
         unpack(self._id, self.character.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogItemUse{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogItemUse{
+    fn into(self) ->Minimal {
         unpack(self._id, self.character.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogParachuteLanding{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogParachuteLanding{
+    fn into(self) ->Minimal {
         unpack(self._id, self.character.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogPlayerAttack{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogPlayerAttack{
+    fn into(self) ->Minimal {
         unpack(self._id, self.attacker.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogPlayerKill{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogPlayerKill{
+    fn into(self) ->Minimal {
         unpack(self._id, self.killer.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogPlayerMakeGroggy{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogPlayerMakeGroggy{
+    fn into(self) ->Minimal {
         unpack(self._id, self.attacker.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogPlayerRevive{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogPlayerRevive{
+    fn into(self) ->Minimal {
         unpack(self._id, self.reviver.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogPlayerTakeDamage{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogPlayerTakeDamage{
+    fn into(self) ->Minimal {
         unpack(self._id, self.attacker.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogPlayerUseThrowable{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogPlayerUseThrowable{
+    fn into(self) ->Minimal {
         unpack(self._id, self.attacker.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogItemEquip{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogItemEquip{
+    fn into(self) ->Minimal {
         unpack(self._id, self.character.clone(),self.mongo_match_id, self._d.clone())
     }
 }
 
-impl Minable<Minimal> for LogItemPickup{
-    fn to_min(&self) ->Minimal {
+impl Into<Minimal> for LogItemPickup{
+    fn into(self) ->Minimal {
         unpack(self._id, self.character.clone(),self.mongo_match_id, self._d.clone())
     }
 }

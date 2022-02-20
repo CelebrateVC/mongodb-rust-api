@@ -10,7 +10,7 @@ use composites::{LogGameStatePeriodic,LogHeal,LogItemAttach,
     LogPlayerRevive,LogPlayerTakeDamage,
     LogPlayerUseThrowable,LogArmorDestroy,Minimal};
 use serde::Deserialize;
-use crate::api::{self, Minable, Gettable};
+use crate::api::{self, Gettable};
 use crate::server::HasEndpoint;
 use crate::server;
 use tokio::runtime::Runtime;
@@ -141,7 +141,7 @@ impl Gettable<Info,Minimal> for HashMap<ObjectId,HashMap<String,HashMap<String, 
                     Some(data) =>{
                         for (date, strut) in data{
                             if answer._d<date.to_string() && date<&ts {
-                                answer = strut.to_min();
+                                answer = strut.clone();
                             }
                         }
                         Some(answer)

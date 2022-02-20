@@ -1,6 +1,5 @@
 extern crate mongodb_api;
 
-use mongodb_api::api::Minable;
 use serde::{Deserialize, Serialize};
 use mongodb::bson::oid::ObjectId;
 use std::collections::HashMap;
@@ -20,6 +19,9 @@ async fn main() -> std::io::Result<()>{
         "9090".to_owned()).start()
 }
 
+//######################
+//# supporting structs #
+//######################
 #[derive(Deserialize, Clone, Default)]
 pub struct Info {
     pub endpoint: String,
@@ -27,8 +29,6 @@ pub struct Info {
     account:String,
     timestamp: String
 }
-
-impl mongodb_api::server::HasEndpoint for Info{fn get_endpoint(self) -> String {self.endpoint}}
 
 #[derive(Debug, Serialize, Deserialize,Clone)]
 pub struct Minimal{
@@ -38,10 +38,15 @@ pub struct Minimal{
     pub _d: String,
 }
 
-impl Minable<Minimal> for Minimal{fn to_min(&self) ->Minimal {self.clone()}}
+// ###################
+// # Implementations #
+// ###################
 
-impl Minable<Minimal> for LogPlayerKill{
-    fn to_min(&self) ->Minimal {
+// Trait to determine which endpoint from the hashmap to use
+impl mongodb_api::server::HasEndpoint for Info{fn get_endpoint(self) -> String {self.endpoint}}
+
+impl Into<Minimal> for LogPlayerKill{
+    fn into(self) ->Minimal {
         Minimal{_id:self._id,
                 account_id: self.killer.clone().unwrap_or_default().account_id.unwrap_or("default account".to_string()),
                 mongo_match_id: self.mongo_match_id.unwrap_or_default(), 
@@ -95,7 +100,7 @@ impl mongodb_api::api::Gettable<Info,Minimal> for DataContainer{
                     Some(data) =>{
                         for (date, strut) in data{
                             if answer._d<date.to_string() && date<&ts {
-                                answer = strut.to_min();
+                                answer = strut.clone();
                             }
                         }
                         Some(answer)
