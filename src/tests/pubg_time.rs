@@ -1,7 +1,8 @@
-
+use actix_web;
 mod composites;
 use std::collections::HashMap;
 use mongodb::bson::oid::ObjectId;
+#[allow(unused_imports)]
 use composites::{LogGameStatePeriodic,LogHeal,LogItemAttach,
     LogItemDetatch,LogItemDrop,LogItemEquip,LogItemPickup,
     LogItemUnequip,LogItemUse,LogParachuteLanding,
@@ -12,34 +13,53 @@ use serde::Deserialize;
 use crate::api::{self, Minable, Gettable};
 use crate::server::HasEndpoint;
 use crate::{mongo_connection, server};
+use tokio::runtime::Runtime;
+use tokio::sync::mpsc;
 
 #[test]
-fn test_timing_api() {
+fn run_db_connect(){
+
+    let rt = Runtime::new().unwrap();
+
+    rt.block_on( async move {
+    let (tx, mut rx) = mpsc::channel(2);
+
+    let x = tokio::spawn(async{ test_timing_api(tx).await });
+    rx.recv().await;
+    println!("recieved!");
+    x.abort();
+});
+println!("unblocked?");
+
+}
+
+async fn test_timing_api(tx: mpsc::Sender<i32>) {
 
         type T = HashMap<ObjectId,HashMap<String,HashMap<String, Minimal>>>;
 
-
-        let db = mongo_connection("mongodb://192.168.0.100:27017".to_owned(), "pubg".to_owned());
+        println!("1");
+        let db = mongo_connection("mongodb://192.168.0.101:27017".to_owned(), "pubg".to_owned()).await;
+        println!("hello");
 
         let map: HashMap<String,api::APIEndpointContainer<Minimal, T,Minimal, Info>>= HashMap::from(
             [
-                ("LogPlayerAttack".to_owned(),      api::APIEndpointContainer::<LogPlayerAttack      , T, Minimal,Info>::new("logplayerattack",&db)),
-                ("LogArmorDestroy".to_owned(),      api::APIEndpointContainer::<LogArmorDestroy      , T, Minimal,Info>::new("logarmordestroy",&db)),
-                ("LogItemAttach".to_owned(),        api::APIEndpointContainer::<LogItemAttach        , T, Minimal,Info>::new("logitemattach",&db)),
-                ("LogItemDetatch".to_owned(),       api::APIEndpointContainer::<LogItemDetatch       , T, Minimal,Info>::new("logitemdetatch",&db)),
-                ("LogItemDrop".to_owned(),          api::APIEndpointContainer::<LogItemDrop          , T, Minimal,Info>::new("logitemdrop",&db)),
-                ("LogHeal".to_owned(),              api::APIEndpointContainer::<LogHeal              , T, Minimal,Info>::new("logheal",&db)),
-                ("LogGameStatePeriodic".to_owned(), api::APIEndpointContainer::<LogGameStatePeriodic , T, Minimal,Info>::new("loggamestateperiodic",&db)),
-                ("LogItemUnequip".to_owned(),       api::APIEndpointContainer::<LogItemUnequip       , T, Minimal,Info>::new("logitemunequip",&db)),
-                ("LogItemUse".to_owned(),           api::APIEndpointContainer::<LogItemUse           , T, Minimal,Info>::new("logitemuse",&db)),
-                ("LogParachuteLanding".to_owned(),  api::APIEndpointContainer::<LogParachuteLanding  , T, Minimal,Info>::new("logparachutelanding",&db)),
-                ("LogPlayerKill".to_owned(),        api::APIEndpointContainer::<LogPlayerKill        , T, Minimal,Info>::new("logplayerkill",&db)),
-                ("LogPlayerMakeGroggy".to_owned(),  api::APIEndpointContainer::<LogPlayerMakeGroggy  , T, Minimal,Info>::new("logplayermakegroggy",&db)),
-                ("LogPlayerRevive".to_owned(),      api::APIEndpointContainer::<LogPlayerRevive      , T, Minimal,Info>::new("logplayerrevive",&db)),
-                ("LogPlayerTakeDamage".to_owned(),  api::APIEndpointContainer::<LogPlayerTakeDamage  , T, Minimal,Info>::new("logplayertakedamage",&db)),
-                ("LogPlayerUseThrowable".to_owned(),api::APIEndpointContainer::<LogPlayerUseThrowable, T, Minimal,Info>::new("logplayerusethrowable",&db)),
-                ("LogItemEquip".to_owned(),         api::APIEndpointContainer::<LogItemEquip         , T, Minimal,Info>::new("LogItemEquip",&db)),
-                ("LogItemPickup".to_owned(),        api::APIEndpointContainer::<LogItemPickup        , T, Minimal,Info>::new("LogItemPickup",&db)),
+                // ("LogPlayerAttack".to_owned(),      api::APIEndpointContainer::<LogPlayerAttack      , T, Minimal,Info>::new("logplayerattack",&db).await),
+                ("LogArmorDestroy".to_owned(),      api::APIEndpointContainer::<LogArmorDestroy      , T, Minimal,Info>::new("logarmordestroy",&db).await),
+                // ("LogItemAttach".to_owned(),        api::APIEndpointContainer::<LogItemAttach        , T, Minimal,Info>::new("logitemattach",&db).await),
+                // ("LogItemDetatch".to_owned(),       api::APIEndpointContainer::<LogItemDetatch       , T, Minimal,Info>::new("logitemdetatch",&db).await),
+                // ("LogItemDrop".to_owned(),          api::APIEndpointContainer::<LogItemDrop          , T, Minimal,Info>::new("logitemdrop",&db).await),
+                // ("LogHeal".to_owned(),              api::APIEndpointContainer::<LogHeal              , T, Minimal,Info>::new("logheal",&db).await),
+                // ("LogGameStatePeriodic".to_owned(), api::APIEndpointContainer::<LogGameStatePeriodic , T, Minimal,Info>::new("loggamestateperiodic",&db).await),
+                // ("LogItemUnequip".to_owned(),       api::APIEndpointContainer::<LogItemUnequip       , T, Minimal,Info>::new("logitemunequip",&db).await),
+                // ("LogItemUse".to_owned(),           api::APIEndpointContainer::<LogItemUse           , T, Minimal,Info>::new("logitemuse",&db).await),
+                // ("LogParachuteLanding".to_owned(),  api::APIEndpointContainer::<LogParachuteLanding  , T, Minimal,Info>::new("logparachutelanding",&db).await),
+                // ("LogPlayerKill".to_owned(),        api::APIEndpointContainer::<LogPlayerKill        , T, Minimal,Info>::new("logplayerkill",&db).await),
+                // ("LogPlayerMakeGroggy".to_owned(),  api::APIEndpointContainer::<LogPlayerMakeGroggy  , T, Minimal,Info>::new("logplayermakegroggy",&db).await),
+                // ("LogPlayerRevive".to_owned(),      api::APIEndpointContainer::<LogPlayerRevive      , T, Minimal,Info>::new("logplayerrevive",&db).await),
+                // ("LogPlayerTakeDamage".to_owned(),  api::APIEndpointContainer::<LogPlayerTakeDamage  , T, Minimal,Info>::new("logplayertakedamage",&db).await),
+                // ("LogPlayerUseThrowable".to_owned(),api::APIEndpointContainer::<LogPlayerUseThrowable, T, Minimal,Info>::new("logplayerusethrowable",&db).await),
+                // ("LogItemEquip".to_owned(),         api::APIEndpointContainer::<LogItemEquip         , T, Minimal,Info>::new("LogItemEquip",&db).await),
+                // ("LogItemPickup".to_owned(),        api::APIEndpointContainer::<LogItemPickup        , T, Minimal,Info>::new("LogItemPickup",&db).await),
             ]
         ); 
 
@@ -47,7 +67,14 @@ fn test_timing_api() {
                                                                              "/{endpoint}/{match_id}/{account}/{timestamp}".to_owned(),
                                                                              "127.0.0.1".to_owned(),
                                                                              "9090".to_owned());
-        server_.start().unwrap();
+        let _x = tx.send(1).await;
+        let server_instance: actix_web::dev::Server = server_.start().unwrap();
+        match server_instance.await{
+            Ok(_x) => {},
+            Err(e) => println!("{:?}",e)
+        };
+
+
 }
 
 #[derive(Deserialize, Clone)]

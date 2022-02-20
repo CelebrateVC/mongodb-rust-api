@@ -3,11 +3,11 @@ use actix_web::HttpResponse;
 use serde::Serialize;
 use mongodb::{
     bson::doc,
-    sync::{
-        Cursor,
-        Database,
-        Collection},
+    Cursor,
+    Database,
+    Collection,
     error::Error};
+use futures::stream::TryStreamExt;
 
 use crate::APPLICATION_JSON;
 
@@ -58,7 +58,7 @@ impl<
     DataContainer: Clone+Default,
     Info: Clone + Default  >
     APIEndpointContainer<T,DataContainer,Minimal, Info>{
-    pub fn new(endpoint: &str, db: &Database)-> APIEndpointContainer<Minimal,DataContainer,Minimal, Info>{
+    pub async fn new(endpoint: &str, db: &Database)-> APIEndpointContainer<Minimal,DataContainer,Minimal, Info>{
         println!("{}",endpoint);
         let mini: Minimal = std::default::Default::default();
         let blank_data: DataContainer = std::default::Default::default();
@@ -67,35 +67,26 @@ impl<
 
         let collection: Collection<T> = db.collection::<T>(endpoint);
 
-        let prog_count = collection.count_documents(doc! {}, None).unwrap();
+        let prog_count = collection.count_documents(doc! {}, None).await.unwrap();
 
-        let items: Result<Cursor<T>,Error> = collection.find(doc! {}, None);
+        let items: Result<Cursor<T>, Error> = collection.find(doc! {}, None).await;
     
         match items {
-            Ok(j) => {
+            Ok(mut j) => {
                 let prog = indicatif::ProgressBar::new(prog_count);
-                for record in j{
+                while let Ok(record) = j.try_next().await{
                     prog.inc(1);
-                    match record{
-                        Ok(rec) => {
-                            let min: Minimal = rec.to_min();
-                            obj.data = min.obj_entry_or_insert(obj.data);
-                            // obj.data.entry(min.mongo_match_id.to_owned())
-                            //         .or_insert(HashMap::new())
-                            //             .entry(min.account_id.clone())
-                            //             .or_insert(HashMap::new())
-                            //                 .insert(min._d.clone(), min);
-                        },
-                        Err(k) => println!("{:?}",k)
-                    };
-            }
-            },
-            Err(k) => println!("{:?}",k)
-        }
+                    if let Some(data) = record{
+                        let min: Minimal = data.to_min();
+                        obj.data = min.obj_entry_or_insert(obj.data);
+                    }
+                    else{break}
+                }
+                },
+            Err(k) => println!("Collection Error\n\t{:?}",k) }
 
         obj
-    }
-}
+}}
 
 
 
