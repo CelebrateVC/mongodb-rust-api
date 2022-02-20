@@ -152,11 +152,7 @@ impl Gettable<Info,Minimal> for HashMap<ObjectId,HashMap<String,HashMap<String, 
     }
 }
 
-impl HasEndpoint for Info{
-    fn get_endpoint(self) -> String {
-        self.endpoint
-    }
-}
+impl HasEndpoint for Info{fn get_endpoint(self) -> String {self.endpoint}}
 
 impl Default for Minimal{
     fn default() -> Self {
