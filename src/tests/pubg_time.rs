@@ -39,28 +39,29 @@ async fn test_timing_api(tx: mpsc::Sender<i32>) {
         type T = HashMap<ObjectId,HashMap<String,HashMap<String, Minimal>>>;
 
         println!("1");
-        let db = mongo_connection("mongodb://192.168.0.101:27017".to_owned(), "pubg".to_owned()).await;
+        let uri = "mongodb://192.168.0.101:27017";
+        let database = "pubg";
         println!("hello");
 
         // TODO: Create internal library functionality; pass in type, string, and endpoint get back endpoint hashmap
         let data = futures::join!(
-               api::APIEndpointContainer::<LogPlayerAttack      , T, Minimal,Info>::new("logplayerattack",&db),
-               api::APIEndpointContainer::<LogArmorDestroy      , T, Minimal,Info>::new("logarmordestroy",&db),
-               api::APIEndpointContainer::<LogItemAttach        , T, Minimal,Info>::new("logitemattach",&db),
-            //    api::APIEndpointContainer::<LogItemDetatch       , T, Minimal,Info>::new("logitemdetatch",&db),
-            //    api::APIEndpointContainer::<LogItemDrop          , T, Minimal,Info>::new("logitemdrop",&db),
-            //    api::APIEndpointContainer::<LogHeal              , T, Minimal,Info>::new("logheal",&db),
-            //    api::APIEndpointContainer::<LogGameStatePeriodic , T, Minimal,Info>::new("loggamestateperiodic",&db),
-            //    api::APIEndpointContainer::<LogItemUnequip       , T, Minimal,Info>::new("logitemunequip",&db),
-            //    api::APIEndpointContainer::<LogItemUse           , T, Minimal,Info>::new("logitemuse",&db),
-            //    api::APIEndpointContainer::<LogParachuteLanding  , T, Minimal,Info>::new("logparachutelanding",&db),
-            //    api::APIEndpointContainer::<LogPlayerKill        , T, Minimal,Info>::new("logplayerkill",&db),
-            //    api::APIEndpointContainer::<LogPlayerMakeGroggy  , T, Minimal,Info>::new("logplayermakegroggy",&db),
-            //    api::APIEndpointContainer::<LogPlayerRevive      , T, Minimal,Info>::new("logplayerrevive",&db),
-            //    api::APIEndpointContainer::<LogPlayerTakeDamage  , T, Minimal,Info>::new("logplayertakedamage",&db),
-            //    api::APIEndpointContainer::<LogPlayerUseThrowable, T, Minimal,Info>::new("logplayerusethrowable",&db),
-            //    api::APIEndpointContainer::<LogItemEquip         , T, Minimal,Info>::new("LogItemEquip",&db),
-            //    api::APIEndpointContainer::<LogItemPickup        , T, Minimal,Info>::new("LogItemPickup",&db),
+               api::APIEndpointContainer::<LogPlayerAttack      , T, Minimal,Info>::new("logplayerattack",uri,database),
+               api::APIEndpointContainer::<LogArmorDestroy      , T, Minimal,Info>::new("logarmordestroy",uri,database),
+               api::APIEndpointContainer::<LogItemAttach        , T, Minimal,Info>::new("logitemattach",uri,database),
+            //    api::APIEndpointContainer::<LogItemDetatch       , T, Minimal,Info>::new("logitemdetatch",uri,database),
+            //    api::APIEndpointContainer::<LogItemDrop          , T, Minimal,Info>::new("logitemdrop",uri,database),
+            //    api::APIEndpointContainer::<LogHeal              , T, Minimal,Info>::new("logheal",uri,database),
+            //    api::APIEndpointContainer::<LogGameStatePeriodic , T, Minimal,Info>::new("loggamestateperiodic",uri,database),
+            //    api::APIEndpointContainer::<LogItemUnequip       , T, Minimal,Info>::new("logitemunequip",uri,database),
+            //    api::APIEndpointContainer::<LogItemUse           , T, Minimal,Info>::new("logitemuse",uri,database),
+            //    api::APIEndpointContainer::<LogParachuteLanding  , T, Minimal,Info>::new("logparachutelanding",uri,database),
+            //    api::APIEndpointContainer::<LogPlayerKill        , T, Minimal,Info>::new("logplayerkill",uri,database),
+            //    api::APIEndpointContainer::<LogPlayerMakeGroggy  , T, Minimal,Info>::new("logplayermakegroggy",uri,database),
+            //    api::APIEndpointContainer::<LogPlayerRevive      , T, Minimal,Info>::new("logplayerrevive",uri,database),
+            //    api::APIEndpointContainer::<LogPlayerTakeDamage  , T, Minimal,Info>::new("logplayertakedamage",uri,database),
+            //    api::APIEndpointContainer::<LogPlayerUseThrowable, T, Minimal,Info>::new("logplayerusethrowable",uri,database),
+            //    api::APIEndpointContainer::<LogItemEquip         , T, Minimal,Info>::new("LogItemEquip",uri,database),
+            //    api::APIEndpointContainer::<LogItemPickup        , T, Minimal,Info>::new("LogItemPickup",uri,database),
             );
 
             let data = [

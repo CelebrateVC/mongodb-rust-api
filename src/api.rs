@@ -9,7 +9,7 @@ use mongodb::{
     error::Error};
 use futures::stream::TryStreamExt;
 
-use crate::APPLICATION_JSON;
+use crate::{mongo_connection,APPLICATION_JSON};
 
 pub trait Minable<T> {
     fn to_min(&self)->T;
@@ -58,13 +58,14 @@ impl<
     DataContainer: Clone+Default,
     Info: Clone + Default  >
     APIEndpointContainer<T,DataContainer,Minimal, Info>{
-    pub async fn new(endpoint: &str, db: &Database)-> APIEndpointContainer<Minimal,DataContainer,Minimal, Info>{
+    pub async fn new(endpoint: &str,uri: &str, database: &str)-> APIEndpointContainer<Minimal,DataContainer,Minimal, Info>{
         println!("{}",endpoint);
         let mini: Minimal = std::default::Default::default();
         let blank_data: DataContainer = std::default::Default::default();
         let info = std::default::Default::default();
         let mut obj: APIEndpointContainer<Minimal, DataContainer, Minimal, Info> = APIEndpointContainer { data: blank_data, min: mini.clone(), base:mini, info:info };
 
+        let db: Database = mongo_connection(uri.to_owned(),database.to_owned()).await;
         let collection: Collection<T> = db.collection::<T>(endpoint);
 
         let prog_count = collection.count_documents(doc! {}, None).await.unwrap();
