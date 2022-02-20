@@ -14,7 +14,7 @@ use crate::api::{self, Minable, Gettable};
 use crate::server::HasEndpoint;
 use crate::{mongo_connection, server};
 use tokio::runtime::Runtime;
-use tokio::sync::mpsc;
+use std::sync::mpsc;
 
 #[test]
 fn run_db_connect(){
@@ -22,12 +22,13 @@ fn run_db_connect(){
     let rt = Runtime::new().unwrap();
 
     rt.block_on( async move {
-    let (tx, mut rx) = mpsc::channel(2);
+    let (tx, rx) = mpsc::channel();
 
-    let x = tokio::spawn(async{ test_timing_api(tx).await });
-    rx.recv().await;
-    println!("recieved!");
-    x.abort();
+    let _x = tokio::spawn(async{ test_timing_api(tx).await });
+    match rx.recv(){
+    Ok(x) => println!("recieved {}!",x),
+    Err(e) => println!("{:?}",e)
+    };
 });
 println!("unblocked?");
 
@@ -67,12 +68,8 @@ async fn test_timing_api(tx: mpsc::Sender<i32>) {
                                                                              "/{endpoint}/{match_id}/{account}/{timestamp}".to_owned(),
                                                                              "127.0.0.1".to_owned(),
                                                                              "9090".to_owned());
-        let _x = tx.send(1).await;
-        let server_instance: actix_web::dev::Server = server_.start().unwrap();
-        match server_instance.await{
-            Ok(_x) => {},
-            Err(e) => println!("{:?}",e)
-        };
+        let _x = tx.send(1);
+        server_.start().unwrap();
 
 
 }

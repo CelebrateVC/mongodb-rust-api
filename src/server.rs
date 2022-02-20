@@ -40,13 +40,13 @@ impl<Minimal: 'static + Minable<Minimal> + Clone + Default + Serialize + Deseria
      WebServer<Minimal, DataContainer, Info>{
 
     #[actix_rt::main]
-    pub async fn start(self) -> io::Result<actix_web::dev::Server>{
+    pub async fn start(self) -> io::Result<()>{
         env::set_var("RUST_LOG", "actix_web=debug,actix_server=info,");
         env::set_var("RUST_BACKTRACE", "1");
         env_logger::init();
 
         
-        let serv = HttpServer::new( move || {
+        HttpServer::new( move || {
     
             let m2 = self.endpoints.clone();
     
@@ -64,15 +64,7 @@ impl<Minimal: 'static + Minable<Minimal> + Clone + Default + Serialize + Deseria
                 ).route(
                     web::get().to(list)
                 ))
-        }).bind(self.server_url+":"+&self.server_port);
-
-        return match serv {
-            Ok(server) => {
-                let app = server.run();
-                Ok(app)
-            },
-            Err(err) => Err(err)
-        }
+        }).bind(self.server_url+":"+&self.server_port)?.run().await
     }
 
 }
